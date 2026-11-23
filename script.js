@@ -58,17 +58,41 @@
     });
   });
 
-  // Card showcase: composited CSS transforms; skip motion on accessibility preferences.
+  // Safari/WebKit may ignore 3D backface-visibility when a parent is composited.
+  // Keep the inactive face explicitly invisible, switching at the 90° midpoint.
   const rotor = $('#card-rotor');
   const stage = $('#card-stage');
   const flipButton = $('#flip-card');
+  const frontFace = $('.bank-front', rotor);
+  const backFace = $('.bank-back', rotor);
+  const FLIP_DURATION = 580;
+  let flipMidTimer = null;
+  let flipDoneTimer = null;
   let flipped = false;
   let activeCard = 'signature';
+
+  const showFace = face => {
+    rotor.dataset.visibleFace = face;
+    frontFace.setAttribute('aria-hidden', String(face !== 'front'));
+    backFace.setAttribute('aria-hidden', String(face !== 'back'));
+  };
+  const cancelFlip = () => {
+    window.clearTimeout(flipMidTimer);
+    window.clearTimeout(flipDoneTimer);
+    flipMidTimer = null;
+    flipDoneTimer = null;
+    rotor.classList.remove('is-turning');
+    flipButton.disabled = false;
+  };
   const setCard = key => {
     if (!cardData[key]) return;
     activeCard = key;
+    cancelFlip();
     flipped = false;
+    // Switching products resets immediately to a clean, readable front face.
+    rotor.classList.add('no-transition');
     rotor.classList.remove('is-flipped');
+    showFace('front');
     rotor.dataset.theme = key;
     rotor.style.setProperty('--rx', '9deg');
     rotor.style.setProperty('--ry', '-16deg');
@@ -76,18 +100,38 @@
     $('#hero-card-grade').textContent = cardData[key].grade;
     $('#selected-name').textContent = cardData[key].name;
     flipButton.setAttribute('aria-pressed', 'false');
+    flipButton.setAttribute('aria-label', 'Xoay mặt sau thẻ');
     $$('.variant').forEach(button => {
       const selected = button.dataset.card === key;
       button.classList.toggle('is-current', selected);
       button.setAttribute('aria-pressed', String(selected));
     });
+    // Flush the no-transition style before restoring the hover tilt transition.
+    void rotor.offsetWidth;
+    window.requestAnimationFrame(() => rotor.classList.remove('no-transition'));
   };
   $$('.variant').forEach(button => button.addEventListener('click', () => setCard(button.dataset.card)));
   flipButton.addEventListener('click', () => {
+    if (flipButton.disabled) return;
     flipped = !flipped;
+    const targetFace = flipped ? 'back' : 'front';
+    rotor.classList.add('is-turning');
     rotor.classList.toggle('is-flipped', flipped);
     flipButton.setAttribute('aria-pressed', String(flipped));
     flipButton.setAttribute('aria-label', flipped ? 'Xoay mặt trước thẻ' : 'Xoay mặt sau thẻ');
+    if (reducedMotion) {
+      showFace(targetFace);
+      rotor.classList.remove('is-turning');
+      return;
+    }
+    flipButton.disabled = true;
+    // Exactly one side remains rendered; works around iOS mirrored text bleed.
+    flipMidTimer = window.setTimeout(() => showFace(targetFace), FLIP_DURATION / 2);
+    flipDoneTimer = window.setTimeout(() => {
+      showFace(targetFace);
+      rotor.classList.remove('is-turning');
+      flipButton.disabled = false;
+    }, FLIP_DURATION + 30);
   });
   const finePointer = window.matchMedia('(hover:hover) and (pointer:fine)').matches;
   if (!reducedMotion && finePointer) {

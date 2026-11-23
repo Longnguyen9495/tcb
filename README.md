@@ -35,7 +35,7 @@ GitHub Actions workflow `pages.yml` deploys the static root to GitHub Pages on e
 
 ## CI and Playwright CLI
 
-GitHub Actions runs Chromium smoke tests as a separate workflow alongside publishing (desktop and mobile emulation); Pages deployment is not blocked by installation of test browsers. Locally:
+GitHub Actions runs Chromium smoke tests before publishing (desktop and mobile emulation). Locally:
 
 ```bash
 npm install
@@ -44,3 +44,7 @@ npx playwright test
 ```
 
 If your environment also has the separate Microsoft `playwright-cli`, you may use it to inspect the page and take interactive snapshots. The included automated tests use the official Playwright **test CLI**. In an environment where local browser navigation is blocked by policy, use GitHub Actions test results instead.
+
+## Sửa lỗi lật thẻ trên Safari iPhone
+
+Hai mặt thẻ sử dụng `-webkit-backface-visibility` và cơ chế `data-visible-face` chỉ hiển thị một mặt. JavaScript chuyển mặt ở điểm giữa 580 ms của hiệu ứng lật, tránh tình trạng chữ hai mặt chồng/soi gương trên Safari iOS. Có kiểm thử hồi quy trên Chromium và WebKit (mobile).

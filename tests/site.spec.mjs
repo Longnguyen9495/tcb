@@ -61,3 +61,42 @@ test('reduced motion keeps content visible', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('[data-reveal]:not(.is-visible)')).toHaveCount(0);
 });
+
+test('3D front and back never render together, including Safari/WebKit', async ({ page }) => {
+  await page.goto('/');
+  const rotor = page.locator('#card-rotor');
+  const front = page.locator('.bank-front');
+  const back = page.locator('.bank-back');
+
+  const assertFace = async face => {
+    await expect(rotor).toHaveAttribute('data-visible-face', face);
+    await expect(front).toHaveCSS('visibility', face === 'front' ? 'visible' : 'hidden');
+    await expect(back).toHaveCSS('visibility', face === 'back' ? 'visible' : 'hidden');
+    await expect(front).toHaveAttribute('aria-hidden', String(face !== 'front'));
+    await expect(back).toHaveAttribute('aria-hidden', String(face !== 'back'));
+  };
+
+  for (const name of ['signature', 'spark', 'everyday', 'eco']) {
+    await page.locator(`[data-card="${name}"]`).click();
+    await assertFace('front');
+    await page.locator('#flip-card').click();
+    await expect(page.locator('#flip-card')).toBeEnabled({ timeout: 3000 });
+    await assertFace('back');
+    await page.locator('#flip-card').click();
+    await expect(page.locator('#flip-card')).toBeEnabled({ timeout: 3000 });
+    await assertFace('front');
+  }
+});
+
+test('switching card variants during a flip restores a clean front face', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#flip-card').click();
+  await page.locator('[data-card="spark"]').click();
+  await expect(page.locator('#card-rotor')).toHaveAttribute('data-visible-face', 'front');
+  await expect(page.locator('#card-rotor')).not.toHaveClass(/is-flipped/);
+  await expect(page.locator('.bank-front')).toHaveCSS('visibility', 'visible');
+  await expect(page.locator('.bank-back')).toHaveCSS('visibility', 'hidden');
+  await expect(page.locator('#flip-card')).toBeEnabled();
+  await page.waitForTimeout(750);
+  await expect(page.locator('.bank-back')).toHaveCSS('visibility', 'hidden');
+});
