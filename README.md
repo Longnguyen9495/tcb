@@ -35,7 +35,7 @@ GitHub Actions workflow `pages.yml` deploys the static root to GitHub Pages on e
 
 ## CI and Playwright CLI
 
-GitHub Actions runs Chromium smoke tests before publishing (desktop and mobile emulation). Locally:
+GitHub Actions runs Chromium smoke tests as a separate workflow alongside publishing (desktop and mobile emulation); Pages deployment is not blocked by installation of test browsers. Locally:
 
 ```bash
 npm install
