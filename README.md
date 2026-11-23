@@ -1,27 +1,46 @@
-# TF1682 — Techcombank credit-card 3D landing page
+# TCB TF1682 — Credit Card Experience
 
-**Independent promotional landing page** (not an official Techcombank website). It does not collect banking information or customer data. Verify all benefits, representative-code eligibility, and permission to use third-party logos/posters before going public.
+A single-page, mobile-first, interactive 3D showcase for Techcombank credit-card offers. **Independent informational landing page, not an official Techcombank property.** No lead collection, no card/account/OTP fields, and no backend.
 
-## Deployment through GitHub Pages
+Live: https://longnguyen9495.github.io/tcb/
 
-1. Create a **public** repository on GitHub named `tcb` (owner: `Longnguyen9495`) with the default branch `main`. Link: https://github.com/new?name=tcb. GitHub Pages requires the published repo to be accessible, and the publishing workflow to have Pages permission.
-2. Add `index.html`, `assets/` and `.github/workflows/pages.yml` to the repository's `main` branch. Or give the repo URL to your assistant so they can upload files for you using the connected GitHub integration.
-3. Under **Settings → Pages → Build and deployment**, choose **Source: GitHub Actions**.
-4. Check **Actions → Publish TF1682 3D landing page** for the green check mark.
-5. GitHub Pages will display the actual public URL in **Settings → Pages**. Expected URL format for user-owned repository: `https://longnguyen9495.github.io/tcb/` (do not assume it is active until a successful deploy).
+## Run locally
 
-## Tech stack
-
-Plain HTML/CSS/JavaScript, no build dependencies or backend. The `index.html` uses six optimized WebP posters under `assets/`. The workflow deploys automatically on every push to `main`; manual runs are also available.
-
-## Local preview
-
-```sh
-python -m http.server 8080
+```bash
+python3 -m http.server 4173
+# open http://localhost:4173/
 ```
 
-Open `http://localhost:8080`.
+No build step or external JavaScript dependency. Files: `index.html`, `styles.css`, `script.js`, `assets/*.webp`, `.github/workflows/pages.yml`, `DESIGN.md`, `WORKFLOW.md`.
 
-## Security reminder
+## Design and implementation process
 
-Do not add forms requesting OTP, CVV, card numbers, passwords, or national ID data. All applications and eligibility checks should be conducted on the official Techcombank website. The displayed 3D card mockups are illustrative only, and advertised benefits are subject to campaign terms.
+- **Taste Skill:** editorial hierarchy, distinctive typography, spacious composition, motion restraint.
+- **Vercel Web Interface Guidelines:** semantic controls, accessible focus, labels, reduced motion, safe areas, performance and responsive checks.
+- **Awesome Design Skills:** a documented premium visual language with tokens, reusable components and acceptance criteria (`DESIGN.md`).
+- **21st.dev Magic MCP concepts:** reusable component patterns (hero/showcase, product grid, bento, gallery, dialog). The external MCP server was **not connected or invoked**; source components are independently implemented.
+- **Playwright browser tests:** automated interactions and screenshot snapshots; see `tests/smoke.py`. Use `python tests/smoke.py` where Playwright + Chromium are available.
+
+## Campaign content and compliance
+
+- Four card offers: Visa Signature, Spark, Everyday and Visa Eco.
+- Six supplied poster images in `assets/`; all rates and conditions derived from these poster images are expressly labelled as references, **not guarantees**.
+- All registration/outbound actions point to official Techcombank URLs, with `rel="noopener noreferrer"`.
+- Consultation code: **TF1682**. Buttons copy the code; no personal data is transmitted.
+- The card illustrations are CSS-created approximations, not scans or real payment-card information.
+
+## Deployment
+
+GitHub Actions workflow `pages.yml` deploys the static root to GitHub Pages on each push to `main` (Settings → Pages → Source: GitHub Actions). No secrets required.
+
+## CI and Playwright CLI
+
+GitHub Actions runs Chromium smoke tests before publishing (desktop and mobile emulation). Locally:
+
+```bash
+npm install
+npx playwright install chromium
+npx playwright test
+```
+
+If your environment also has the separate Microsoft `playwright-cli`, you may use it to inspect the page and take interactive snapshots. The included automated tests use the official Playwright **test CLI**. In an environment where local browser navigation is blocked by policy, use GitHub Actions test results instead.

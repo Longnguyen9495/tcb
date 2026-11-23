@@ -1,0 +1,13 @@
+{
+  "name": "tcb-tf1682-3d-showroom",
+  "private": true,
+  "version": "2.0.0",
+  "description": "Independent static 3D Techcombank offers showroom",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0"
+  }
+}
